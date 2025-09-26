@@ -26,13 +26,13 @@ public_users.post("/register", (req, res) => {
         if (!doesExist(username)) {
             // Add the new user to the users array
             users.push({ "username": username, "password": password });
-            return res.status(300).json({ message: "User successfully registered. Now you can login" });
+            return res.status(300).json({ "message": "Customer successfully registered. Now you can login" });
         } else {
-            return res.status(404).json({ message: "User already exists!" });
+            return res.status(404).json({ "message": "Customer already exists!" });
         }
     }
     // Return error if username or password is missing
-    return res.status(404).json({ message: "Unable to register user." });
+    return res.status(404).json({ "error": "Unable to register customer." });
 });
 
 // Get the book list available in the shop
@@ -44,7 +44,7 @@ public_users.get('/', function (req, res) {
     })
 
     myPromise.then(booksPromise => {
-        return res.status(300).json({ message: "Books available: " + JSON.stringify(booksPromise) });
+        return res.status(300).json({"books":booksPromise});
     })
 });
 
@@ -59,9 +59,9 @@ public_users.get('/isbn/:isbn', function (req, res) {
 
     myPromise.then((bookFound) => {
         if (bookFound)
-            return res.status(300).json({ message: `Book with ISBN = ${req.params.isbn}: ${JSON.stringify(bookFound)}` });
+            return res.status(300).json(bookFound);
         else
-            return res.status(404).json({ message: "Book was not found" });
+            return res.status(404).json({ "error": "Book was not found" });
     })
 
 
@@ -84,11 +84,11 @@ public_users.get('/author/:author', async function (req, res) {
     try {
         let booksFound = await getByAuthor();
         if (booksFound.length > 0)
-            return res.status(300).json({ message: `Book written by author = ${req.params.author}: ${JSON.stringify(booksFound)}` });
+            return res.status(300).json({"booksByAuthor" : booksFound});
         else
-            return res.status(404).json({ message: "Book was not found" });
+            return res.status(404).json({ "error": "Book was not found" });
     } catch (error) {
-        return res.status(505).json({ message: "There was an error: " + error });
+        return res.status(505).json({ error });
     }
 });
 
@@ -107,12 +107,12 @@ public_users.get('/title/:title', async function (req, res) {
     try {
         let booksFound = await getByTitle();
         if (booksFound.length > 0)
-            return res.status(300).json({ message: `Book with title = ${req.params.title}: ${JSON.stringify(booksFound)}` });
+            return res.status(300).json({ "booksByTitle": booksFound });
         else
-            return res.status(404).json({ message: "Book was not found" });
+            return res.status(404).json({ "error": "Book was not found" });
 
     } catch (error) {
-        return res.status(505).json({ message: "There was an error: " + error });
+        return res.status(505).json({ error });
     }
 });
 
@@ -120,10 +120,10 @@ public_users.get('/title/:title', async function (req, res) {
 public_users.get('/review/:isbn', function (req, res) {
     const bookFound = books[req.params.isbn];
     if (bookFound) {
-        return res.status(300).json({ message: `Reviews of book with ISBN ${req.params.isbn}: ${JSON.stringify(bookFound.reviews)}` });
+        return res.status(300).json({ "reviewsByIsbn": bookFound.reviews});
     }
     else
-        return res.status(404).json({ message: "Book was not found" });
+        return res.status(404).json({ "error": "Book was not found" });
 });
 
 module.exports.general = public_users;
