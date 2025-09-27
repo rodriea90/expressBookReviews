@@ -15,8 +15,8 @@ let users = [
 ];
 
 const alreadyReviewed = (bookFound, username) => {
-    const filteredBooks = bookFound.reviews.filter = book => { book.user === username };
-    if (filteredBooks.length > 0)
+    const filteredReviews = bookFound.reviews.filter(review =>  review.username === username );
+    if (filteredReviews.length > 0)
         return true;
     else
         return false;
@@ -68,7 +68,7 @@ regd_users.post("/login", (req, res) => {
         req.session.authorization = {
             accessToken, username
         }
-        return res.status(300).send({"message":"User successfully logged in"});
+        return res.status(300).send({ "message": "User successfully logged in" });
     } else {
         return res.status(208).json({ "error": "Invalid Login. Check username and password" });
     }
@@ -78,38 +78,37 @@ regd_users.post("/login", (req, res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const username = req.session.authorization.username;
     let bookFound = books[req.params.isbn];
-    let review = req.body.review;
+    let review = req.query.review;
     let msg = "";
-    if (bookFound) {
+    if (bookFound && review) {
         if (alreadyReviewed(bookFound, username)) {
-            if (review) {
-                bookFound.reviews.find(rev => rev.username === username).review = review;
-                msg = `The book's review was succesfully updated to ${review}.`;
-            }            
+            bookFound.reviews.find(rev => rev.username === username).review = review;
+            msg = `The book's review was succesfully updated to ${review}.`;
         }
         else {
             console.log("Review not found, addition");
-            if (review) {
-                bookFound.reviews.push({ "user": username, "review": review });
-                msg = `The book's review ${review} was succesfully added!`;
-            }
+            bookFound.reviews.push({ "username": username, "review": review });
+            msg = `The book's review ${review} was succesfully added!`;
         }
-
-        return res.status(300).json({ message: msg });
+        return res.status(300).json({ "message": msg });
     }
     else
-        return res.status(404).json({ message: "Book was not found" });
+        return res.status(404).json({ "error": "Book was not found or the review query was not passed." });
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
     const username = req.session.authorization.username;
     let bookFound = books[req.params.isbn];
-    if (bookFound) {        
+    if (bookFound) {
+        reviewDeleted = bookFound.reviews.find(rev => rev.username === username);
         bookFound.reviews = bookFound.reviews.filter(rev => rev.username !== username);
-        return res.status(300).json({ message: `The book's review written by ${username} was deleted!`});
+        if(reviewDeleted)
+            return res.status(300).json({ "reviewDeleted":reviewDeleted});
+        else
+            return res.status(300).json({"error": "No review found for this customer."}); 
     }
     else
-        return res.status(404).json({ message: "Book was not found" });
+        return res.status(404).json({ "error": "Book was not found" });
 });
 
 module.exports.authenticated = regd_users;
